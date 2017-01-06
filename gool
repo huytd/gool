@@ -7,10 +7,31 @@ const read = require('node-readability')
 
 let query = process.argv.slice(2).join('+').trim();
 
-let isOpenIndex = query.match(/\d+/)
+let isOpenIndex = query.match(/^\d{1,2}$/)
+let isOpenBrowserIndex = query.match(/^o\ \d{1,2}$/)
 
 function printHelp() {
     console.log("GOOL - Google in a line\n\nUsage:\n\n Search: \t\t gool <search term>\n Open URL: \t\t gool <number>\n Previous search: \t gool\n")
+}
+
+if (isOpenBrowserIndex) {
+  let matcher = query.match(/\d{1,2}/)
+  let index = parseInt(matcher[0])
+
+  let existFile = fs.existsSync('/var/tmp/gool_result');
+  if (existFile) {
+    let data = fs.readFileSync('/var/tmp/gool_urls', 'utf8');
+
+    let urls = data.split('\n\n');
+
+    if (urls.length >= index) {
+      let url = urls[index - 1];
+      let spawn = require('child_process').spawn
+      spawn('open', [url]);
+    }
+  }
+
+  return;
 }
 
 if (isOpenIndex) {
