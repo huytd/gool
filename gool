@@ -7,13 +7,8 @@ const read = require('node-readability')
 
 let query = process.argv.slice(2).join('+').trim();
 
-console.log('Query: ', query);
-
 let isOpenIndex = query.match(/^\d{1,2}$/)
 let isOpenBrowserIndex = query.match(/^o\+\d{1,2}$/)
-
-console.log(isOpenIndex);
-console.log(isOpenBrowserIndex);
 
 function printHelp() {
     console.log("GOOL - Google in a line\n\nUsage:\n\n Search: \t\t gool <search term>\n Open URL: \t\t gool <number>\n Previous search: \t gool\n")
