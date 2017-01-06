@@ -1,0 +1,13 @@
+{
+  "name": "gool",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Huy",
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "node-fetch": "^1.6.3",
+    "node-readability": "^2.2.0"
+  },
+  "bin": "./gool"
+}

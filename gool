@@ -1,0 +1,102 @@
+#!/usr/local/bin/node
+
+const fetch = require('node-fetch')
+const cheerio = require('cheerio')
+const fs = require('fs')
+const read = require('node-readability')
+
+let query = process.argv.slice(2).join('+').trim();
+
+let isOpenIndex = query.match(/\d+/)
+
+function printHelp() {
+    console.log("GOOL - Google in a line\n\nUsage:\n\n Search: \t\t gool <search term>\n Open URL: \t\t gool <number>\n Previous search: \t gool\n")
+}
+
+if (isOpenIndex) {
+  let index = parseInt(isOpenIndex[0])
+  let existFile = fs.existsSync('/var/tmp/gool_result');
+  if (existFile) {
+    let data = fs.readFileSync('/var/tmp/gool_urls', 'utf8');
+
+    let urls = data.split('\n\n');
+
+    if (urls.length >= index) {
+      let url = urls[index - 1];
+      console.log('>', url, '\n');
+      fetch(url)
+        .then((response) => response.text())
+        .then((content) => {
+          read(content, (rerr, article, meta) => {
+            if (rerr) {
+              console.log('ERROR:', rerr);
+            } else {
+              console.log("\x1b[0m\x1b[1m\x1b[4m\x1b[32m" + article.title + "\x1b[0m\n");
+              let $ = cheerio.load(article.content);
+              console.log($.text());
+              article.close();
+            }
+          });
+        }); 
+    } else {
+      console.log('Invalid index!');
+    }
+  } else {
+    printHelp();
+  }
+
+  return;
+}
+
+if (!query) {
+  let existFile = fs.existsSync('/var/tmp/gool_result');
+  if (existFile) {
+    let data = fs.readFileSync('/var/tmp/gool_result', 'utf8');
+    console.log(data);
+  } else {
+    printHelp();
+  }
+  return;
+}
+
+if (query === 'clean') {
+  fs.unlinkSync('/var/tmp/gool_urls');
+  fs.unlinkSync('/var/tmp/gool_result');
+  printHelp();
+  return;
+}
+
+fetch('https://google.com/search?q=' + query + '+-youtube')
+  .then((response) => response.text())
+  .then((content) => {
+    let $ = cheerio.load(content);
+    let results = $(".g");
+    let strs = [];
+    let urls = [];
+    for (let i = 0; i < results.length; i++) {
+      let title = $(".r a", results[i]).text();
+      let url = $(".r a", results[i]).attr('href').replace(/\/url\?q\=/, '');
+      urls.push(url.replace(/(\&sa\=.*)/, ''));
+      let desc = $(".st", results[i]).text().replace(/\n/g,' ');
+      let srcmatch = url.match(/\:\/\/(.*?)\//);
+      let src = '';
+      if (srcmatch && srcmatch.length > 1) src = srcmatch[1];
+      else src = url;
+      if (url.indexOf('/search?q=') == 0) continue;
+      let str = "\x1b[31m\x1b[1m" + (i + 1) +  ". \x1b[0m\x1b[1m\x1b[4m\x1b[33m" + title + "\x1b[0m | \x1b[34m" + src + "\x1b[0m\n" + desc + "\n";
+      strs.push(str);
+    }
+
+    console.log(strs.join('\n'));
+    fs.writeFile('/var/tmp/gool_result', strs.join('\n'), (err) => {
+      if (err != null) {
+        console.log('Error writing temp file', err);
+      }
+    });
+
+    fs.writeFile('/var/tmp/gool_urls', urls.join('\n\n'), (err) => {
+      if (err != null) {
+        console.log('Error writing temp file', err);
+      }
+    });
+  })
