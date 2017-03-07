@@ -6,8 +6,6 @@ GOOL is an utility to help you search Google quickly right in the terminal. You 
 
 ## How to install?
 
-Install the [`rust-url-render`](http://github.com/huytd/rust-url-render) application first. 
-
 Then install `gool` it via `npm`:
 
 ```
