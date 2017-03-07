@@ -6,6 +6,8 @@
   "license": "MIT",
   "dependencies": {
     "cheerio": "^0.22.0",
+    "marked": "^0.3.6",
+    "marked-terminal": "^2.0.0",
     "node-fetch": "^1.6.3",
     "node-readability": "^2.2.0"
   },

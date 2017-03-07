@@ -2,8 +2,18 @@
 
 const fetch = require('node-fetch')
 const cheerio = require('cheerio')
+const marked = require('marked');
+const TerminalRenderer = require('marked-terminal');
 const fs = require('fs')
-const read = require('node-readability')
+const exec = require('child_process').exec;
+
+marked.setOptions({
+  renderer: new TerminalRenderer()
+});
+
+function execute(command, callback) {
+    exec(command, function(error, stdout, stderr){ callback(stdout); });
+};
 
 let query = process.argv.slice(2).join('+').trim();
 
@@ -46,20 +56,10 @@ if (isOpenIndex) {
     if (urls.length >= index) {
       let url = urls[index - 1];
       console.log('>', url, '\n');
-      fetch(url)
-        .then((response) => response.text())
-        .then((content) => {
-          read(content, (rerr, article, meta) => {
-            if (rerr) {
-              console.log('ERROR:', rerr);
-            } else {
-              console.log("\x1b[0m\x1b[1m\x1b[4m\x1b[32m" + article.title + "\x1b[0m\n");
-              let $ = cheerio.load(article.content);
-              console.log($.text());
-              article.close();
-            }
-          });
-        }); 
+
+      execute("echo '" + url + "' | render", function(data) {
+        console.log(marked(data));
+      });
     } else {
       console.log('Invalid index!');
     }
