@@ -21,7 +21,7 @@ function printHelp() {
 
 if (isOpenURL) {
   let url = isOpenURL;
-  execute("w3m -dump -graph " + url, function(data) {
+  execute("w3m " + url, function(data) {
     console.log(data);
   });
   return;
